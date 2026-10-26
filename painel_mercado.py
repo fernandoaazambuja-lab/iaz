@@ -615,6 +615,16 @@ def main():
         u1 = conv(d1, fator)
         u27 = conv(d27, fator)
         r27 = (u27 * dol27 if (u27 and dol27) else None) if conv_brl else u27
+
+        def cc_linha(d, u, extra=""):   # linha do cartão de celular
+            dv, dp = var(d) if d else (None, None)
+            vt = "%s %s%s%%" % (seta(dp), "+" if dp > 0 else "", br(dp, 2)) if dp is not None else ""
+            return ('<div class="cc-r%s"><span>%s</span><b>%s</b><em class="%s">%s</em><i>%s</i></div>'
+                    % (extra, (d or {}).get("contrato", "—"), br((d or {}).get("valor"), 2), classe(dp), vt,
+                       (unidade_conv % br(u, 2)) if u else ""))
+        cartoes.append('<div class="cc"><div class="cc-h"><b>%s</b><small>%s</small></div>%s%s%s</div>'
+                       % (nome, und, cc_linha(d1, u1), cc_linha(d27, u27, " f"),
+                          ('<div class="cc-brl">2027 em reais <b>R$ %s</b></div>' % br(r27, 2)) if r27 else ""))
         return ("<tr><th>%s<small>%s</small></th>"
                 "<td class='ctr'>%s</td><td class='num v'>%s</td>%s<td class='num conv'>%s</td>"
                 "<td class='ctr sep'>%s</td><td class='num v'>%s</td>%s<td class='num conv'>%s</td>"
@@ -624,6 +634,7 @@ def main():
                    br((d27 or {}).get("valor"), 2), cel_var(d27),
                    (unidade_conv % br(u27, 2)) if u27 else "", ("R$ " + br(r27, 2)) if r27 else "—"))
 
+    cartoes = []
     tabela = "".join([
         linha_comm("Soja CBOT", "¢/bushel", g("S_1"), g("S_27"), BU_SC_SOJA / 100, "US$ %s/sc"),
         linha_comm("Soja B3", "US$/sc 60 kg", g("SJC_1"), g("SJC_27"), 1, "US$ %s/sc"),
@@ -748,6 +759,7 @@ def main():
             tile(g("ng"), "Gás natural", 3, "US$ ", "/MMBtu", hist=hist, chave="ng"),
         ]),
         fert="".join(fert_tiles),
+        cartoes="".join(cartoes),
         graf_usd_12=grafico_fert(comex, None, "US$/t", 13),
         graf_brl_12=grafico_fert(comex, (h.get("comex") or {}).get("ptax_mes") or {}, "R$/t", 13),
         graf_usd=grafico_fert(comex, None, "US$/t"),
@@ -956,6 +968,45 @@ td.brl {{ font-size:16px; font-weight:700; color:var(--accent); background:var(-
 .read li {{ max-width:110ch; }}
 .read p {{ margin:10px 0 0; font-size:11px; color:var(--muted); }}
 footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
+.mcomm {{ display:none; }}
+/* celular: quadros em 2 colunas, commodities em cartões, tabelas só com as colunas essenciais */
+@media (max-width: 640px) {{
+  body {{ padding-top:12px; }}
+  h1 {{ font-size:20px; }} .meta {{ font-size:12px; gap:4px 10px; }}
+  .wrap {{ gap:12px; }}
+  .grid, .hero, .fert .fgrid {{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }}
+  .tile {{ padding:9px 10px 8px; gap:2px; }}
+  .t-name {{ font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
+  .t-head {{ flex-wrap:wrap; gap:2px 6px; }}
+  .t-ctr {{ font-size:10px; padding:0 4px; }}
+  .t-val, .big .t-val {{ font-size:18px; }} .big .t-val {{ font-size:20px; }}
+  .t-val small {{ font-size:10px; }}
+  .t-chg {{ font-size:11px; }} .t-sub {{ font-size:11px; }}
+  .t-foot {{ font-size:10px; }}
+  .range {{ display:none; }} .spark {{ height:18px; }}
+  .mcomm {{ display:grid; gap:8px; }} .board.comm {{ display:none; }}
+  .cc {{ background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:10px 12px; display:grid; gap:4px; }}
+  .cc-h {{ display:flex; justify-content:space-between; align-items:baseline; }}
+  .cc-h b {{ font-size:15px; }} .cc-h small {{ font:11px var(--f-mono); color:var(--muted); }}
+  .cc-r {{ display:grid; grid-template-columns:52px 1fr auto; gap:2px 8px; align-items:baseline; font-family:var(--f-mono); font-variant-numeric:tabular-nums; }}
+  .cc-r span {{ color:var(--muted); font-size:12px; }} .cc-r b {{ font-size:16px; }}
+  .cc-r em {{ font-style:normal; font-size:12px; font-weight:600; text-align:right; }}
+  .cc-r em.up {{ color:var(--up); }} .cc-r em.down {{ color:var(--down); }} .cc-r em.flat {{ color:var(--flat); }}
+  .cc-r i {{ grid-column:2 / 4; font-style:normal; font-size:11px; color:var(--muted); }}
+  .cc-r.f {{ border-top:1px dashed var(--line); padding-top:4px; }}
+  .cc-brl {{ display:flex; justify-content:space-between; background:var(--accent-soft); color:var(--accent); border-radius:4px; padding:4px 8px; font-size:12px; }}
+  .cc-brl b {{ font-family:var(--f-mono); font-size:14px; }}
+  .fert {{ padding:12px; }}
+  .legend {{ margin-left:0; flex-basis:100%; }}
+  .fchart {{ min-width:0; }}
+  .ftab {{ min-width:0; }}
+  .ftab th, .ftab td {{ padding:8px 6px; font-size:12px; }} .ftab td.v {{ font-size:13px; }}
+  .tfert th:nth-child(3), .tfert td:nth-child(3), .tfert th:nth-child(4), .tfert td:nth-child(4),
+  .tfert th:nth-child(6), .tfert td:nth-child(6), .tfert th:nth-child(8), .tfert td:nth-child(8),
+  .ttroca th:nth-child(3), .ttroca td:nth-child(3), .ttroca th:nth-child(4), .ttroca td:nth-child(4),
+  .ttroca th:nth-child(6), .ttroca td:nth-child(6), .ttroca th:nth-child(7), .ttroca td:nth-child(7) {{ display:none; }}
+  .read {{ padding:12px 14px; }} .read ul {{ padding-left:16px; }}
+}}
 .fert {{ background:var(--surface); border:1px solid var(--line); border-top:4px solid var(--accent); border-radius:6px;
   padding:16px 18px 18px; display:grid; gap:14px; break-before:page; }}
 .fert-head p {{ margin:0; color:var(--muted); font-size:13px; }}
@@ -1001,7 +1052,8 @@ footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
 <section><h2>Manchete do dia</h2><div class="grid hero">{hero}</div></section>
 
 <section><h2>Commodities — agora × safra 2027</h2>
-<div class="board"><table>
+<div class="mcomm">{cartoes}</div>
+<div class="board comm"><table>
 <thead>
 <tr class="grp"><th></th><th colspan="4">Contrato atual</th><th colspan="4" class="sep">Vencimento 2027</th><th></th></tr>
 <tr><th>Produto</th><th style="text-align:center">venc.</th><th>preço</th><th>var. dia</th><th>conversão</th>
@@ -1033,7 +1085,7 @@ footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
     <div class="chart c-usd pall">{graf_usd}</div>
     <div class="chart c-brl pall">{graf_brl}</div>
   </div>
-  <div class="board"><table class="ftab">
+  <div class="board"><table class="ftab tfert">
   <thead><tr><th>Produto</th><th>último</th><th>vs mês ant.</th><th>3 meses</th><th>12 meses</th><th>pico</th><th>vs pico</th><th>mínima</th><th>ao dólar de hoje</th></tr></thead>
   <tbody>{tab_fert}</tbody></table></div>
 
@@ -1047,7 +1099,7 @@ footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
     <div class="chart t12">{graf_tr_12}</div>
     <div class="chart tall">{graf_tr}</div>
   </div>
-  <div class="board"><table class="ftab">
+  <div class="board"><table class="ftab ttroca">
   <thead><tr><th>Produto</th><th>último</th><th>1 ano antes</th><th>média desde {ini_fert}</th><th>vs média</th><th>melhor</th><th>pior</th><th>indicativo hoje</th></tr></thead>
   <tbody>{tab_troca}</tbody></table></div>
   <p class="nota">"Indicativo hoje" = último CFR do fertilizante ÷ soja B3 de hoje (CBOT, sem prêmio de porto); difere da relação mensal pelo prêmio de porto, que pode ser positivo ou negativo.</p>
