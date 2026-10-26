@@ -842,14 +842,26 @@ def main():
             return None
         return item("Troca " + nome, {"valor": t[-1][1], "ant": t[-2][1] if len(t) > 1 else None,
                                       "contrato": mes_txt(t[-1][0])}, 1, "", " sc")
-    itens = [item("Dólar", g("usdbrl"), 4, "R$ "), item("Dólar safra", g("DOL_27"), 4, "R$ "),
-             item("Soja B3", g("SJC_27"), 2, "US$ "), item("Milho B3", g("CCM_27"), 2, "R$ "),
-             item("Algodão", g("CT_27"), 2, "", "¢"), troca("ureia", "ureia"),
-             item("Dólar fut.", g("DOL_1"), 4, "R$ "), item("DI", g("DI1F28"), 2, "", "%", pp=True),
-             item("Ibovespa", g("ibov"), 0), item("EWZ", g("ewz"), 2, "US$ "),
-             item("Soja CBOT", sc(g("S_27"), BU_SC_SOJA / 100), 2, "US$ "),
-             item("Algodão", g("CT_1"), 2, "", "¢"), item("Brent", g("brent"), 2, "US$ "),
-             troca("kcl", "KCl"), troca("map", "MAP")]
+    # ordem agrupada por assunto; "medio" marca as 6 linhas do widget médio
+    def grp(i, grupo, medio=False):
+        if i:
+            i.update({"grupo": grupo, "medio": medio})
+        return i
+    itens = [grp(item("Dólar", g("usdbrl"), 4, "R$ "), "cambio", True),
+             grp(item("Dólar fut.", g("DOL_1"), 4, "R$ "), "cambio"),
+             grp(item("Dólar safra", g("DOL_27"), 4, "R$ "), "cambio", True),
+             grp(item("DI", g("DI1F28"), 2, "", "%", pp=True), "cambio"),
+             grp(item("Soja CBOT", sc(g("S_27"), BU_SC_SOJA / 100), 2, "US$ "), "soja"),
+             grp(item("Soja B3", g("SJC_27"), 2, "US$ "), "soja", True),
+             grp(item("Milho B3", g("CCM_27"), 2, "R$ "), "milho", True),
+             grp(item("Algodão", g("CT_1"), 2, "", "¢"), "algodao"),
+             grp(item("Algodão", g("CT_27"), 2, "", "¢"), "algodao", True),
+             grp(item("Brent", g("brent"), 2, "US$ "), "energia"),
+             grp(item("Ibovespa", g("ibov"), 0), "bolsa"),
+             grp(item("EWZ", g("ewz"), 2, "US$ "), "bolsa"),
+             grp(troca("ureia", "ureia"), "troca", True),
+             grp(troca("kcl", "KCl"), "troca"),
+             grp(troca("map", "MAP"), "troca")]
     with open(os.path.join(OUT_DIR, "dados.json"), "w", encoding="utf-8") as f:
         json.dump({"hora": AGORA.strftime("%H:%M"), "data": AGORA.strftime("%d/%m"), "ok": not falhas,
                    "itens": [i for i in itens if i]}, f, ensure_ascii=False)

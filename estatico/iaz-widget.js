@@ -1,10 +1,10 @@
 // iAz · AzamInsights — widget do iPhone (app Scriptable)
 // Lê os números publicados a cada 5 min em fernandoaazambuja-lab.github.io/iaz e mostra na tela inicial.
-// Tamanhos: pequeno (4 linhas), médio (6), grande (13) e tela de bloqueio (3).
+// Tamanhos: pequeno (4 linhas), médio (6 marcadas como "medio"), grande (todas, agrupadas) e tela de bloqueio (3).
 const URL_DADOS = "https://fernandoaazambuja-lab.github.io/iaz/dados.json"
 const URL_SITE = "https://fernandoaazambuja-lab.github.io/iaz/"
 const fam = config.widgetFamily || "medium"
-const LINHAS = { small: 4, medium: 6, large: 13 }
+const LINHAS = { small: 4, medium: 6, large: 15 }
 
 let d = null
 try {
@@ -54,7 +54,11 @@ if (fam.startsWith("accessory")) {
     const t = w.addText("Sem conexão com o iAz"); t.textColor = CINZA; t.font = Font.systemFont(12)
   } else {
     const pequeno = fam === "small"
-    for (const it of d.itens.slice(0, LINHAS[fam] || 6)) {
+    const lista = fam === "large" ? d.itens : d.itens.filter(i => i.medio !== false)
+    let grupoAnt = null
+    for (const it of lista.slice(0, LINHAS[fam] || 6)) {
+      if (fam === "large" && grupoAnt && it.grupo !== grupoAnt) w.addSpacer(4)   // respiro entre assuntos
+      grupoAnt = it.grupo
       const l = w.addStack()
       l.centerAlignContent()
       const nome = l.addText(pequeno ? it.nome : `${it.nome}${it.ctr ? " " + it.ctr : ""}`)
@@ -70,7 +74,7 @@ if (fam.startsWith("accessory")) {
         t.font = Font.mediumMonospacedSystemFont(11)
         t.textColor = it.dir === "up" ? SOBE : it.dir === "down" ? DESCE : CINZA
       }
-      w.addSpacer(fam === "large" ? 5 : 3)
+      w.addSpacer(fam === "large" ? 2 : 3)
     }
   }
 }
