@@ -423,7 +423,7 @@ def mes_txt(m):
 def grafico_fert(comex, ptax_mes, unidade, ultimos=None, linhas=None, dec=0):
     # desenha duas versões: larga (computador) e estreita (celular, letra legível); o CSS mostra uma só
     return (_grafico(comex, ptax_mes, unidade, ultimos, linhas, dec, (900, 340, 62, 110, 22, 30), "dsk")
-            + _grafico(comex, ptax_mes, unidade, ultimos, linhas, dec, (360, 250, 40, 62, 20, 26), "mob"))
+            + _grafico(comex, ptax_mes, unidade, ultimos, linhas, dec, (360, 250, 48, 62, 20, 26), "mob"))
 
 
 def _grafico(comex, ptax_mes, unidade, ultimos, linhas, dec, dims, versao):
