@@ -421,8 +421,14 @@ def mes_txt(m):
 
 
 def grafico_fert(comex, ptax_mes, unidade, ultimos=None, linhas=None, dec=0):
+    # desenha duas versões: larga (computador) e estreita (celular, letra legível); o CSS mostra uma só
+    return (_grafico(comex, ptax_mes, unidade, ultimos, linhas, dec, (900, 340, 62, 110, 22, 30), "dsk")
+            + _grafico(comex, ptax_mes, unidade, ultimos, linhas, dec, (360, 250, 40, 62, 20, 26), "mob"))
+
+
+def _grafico(comex, ptax_mes, unidade, ultimos, linhas, dec, dims, versao):
     # ultimos=13 dá a janela de 12 meses (mesmo mês do ano anterior até o último)
-    W, H, L, R, T, B = 900, 340, 62, 110, 22, 30
+    W, H, L, R, T, B = dims
     if linhas is None:
         linhas = {k: serie_fert(comex, k, ptax_mes) for k, _ in COMEX_NCM.values()}
     tem = sorted({m for p in linhas.values() for m, _ in p})
@@ -436,24 +442,27 @@ def grafico_fert(comex, ptax_mes, unidade, ultimos=None, linhas=None, dec=0):
         meses = meses[-ultimos:]
         linhas = {k: [x for x in p if x[0] >= meses[0]] for k, p in linhas.items()}
     if len(meses) < 2:
-        return '<p class="vazio">Histórico ainda não carregado. O Comex Stat entra numa das próximas atualizações.</p>'
+        return ('<p class="vazio %s">Histórico ainda não carregado. O Comex Stat entra numa das próximas atualizações.</p>'
+                % versao)
     idx = {m: i for i, m in enumerate(meses)}
     vmax = max(v for p in linhas.values() for _, v in p)
     passo = next(p for p in (2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000) if vmax / p <= 7)
     topo = -(-vmax // passo) * passo
     X = lambda i: L + i * (W - L - R) / (len(meses) - 1)
     Y = lambda v: T + (H - T - B) * (1 - v / topo)
-    o = ['<svg class="fchart" viewBox="0 0 %d %d" role="img" aria-label="Evolução do preço CFR de ureia, KCl e MAP">' % (W, H)]
+    o = ['<svg class="fchart %s" viewBox="0 0 %d %d" role="img" aria-label="Evolução do preço CFR de ureia, KCl e MAP">' % (versao, W, H)]
     v = 0
     while v <= topo:
         o.append('<line class="gl" x1="%d" x2="%d" y1="%.1f" y2="%.1f"/><text class="ax" x="%d" y="%.1f" text-anchor="end">%s</text>'
                  % (L, W - R, Y(v), Y(v), L - 8, Y(v) + 4, br(v, 0)))
         v += passo
     for m in meses:
-        if len(meses) <= 18:   # janela curta: um rótulo por mês
+        if len(meses) <= 18:   # janela curta: um rótulo por mês (no celular, a cada 3, terminando no último)
             x = X(idx[m])
+            passo_rot = 1 if W >= 600 else 3
+            rot = mes_txt(m) if (len(meses) - 1 - idx[m]) % passo_rot == 0 else ""
             o.append('<line class="gl yr" x1="%.1f" x2="%.1f" y1="%d" y2="%d"/><text class="ax" x="%.1f" y="%d" text-anchor="middle">%s</text>'
-                     % (x, x, T, H - B, x, H - 10, mes_txt(m)))
+                     % (x, x, T, H - B, x, H - 10, rot))
         elif m.endswith("-01"):
             x = X(idx[m])
             o.append('<line class="gl yr" x1="%.1f" x2="%.1f" y1="%d" y2="%d"/><text class="ax" x="%.1f" y="%d">%s</text>'
@@ -1006,6 +1015,7 @@ footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
   .marca img {{ width:36px; height:36px; border-radius:8px; }}
   .legend {{ margin-left:0; flex-basis:100%; }}
   .fert .fchart {{ min-width:0; }}
+  .fert .dsk {{ display:none; }} .fert .mob {{ display:block; }}
   .fert .ftab {{ min-width:0; }}
   .fert .ftab th, .fert .ftab td {{ padding:8px 6px; font-size:12px; }} .fert .ftab td.v {{ font-size:13px; }}
   .fert .tfert th:nth-child(3), .tfert td:nth-child(3), .tfert th:nth-child(4), .tfert td:nth-child(4),
@@ -1036,6 +1046,7 @@ footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
 .tr-head {{ border-top:1px solid var(--line); padding-top:14px; }}
 .nota {{ margin:0; font-size:11px; color:var(--muted); }}
 .fchart {{ width:100%; min-width:640px; height:auto; display:block; }}
+.fert .mob {{ display:none; }}
 .fchart .gl {{ stroke:var(--line); stroke-width:1; }} .fchart .gl.yr {{ stroke-dasharray:2 4; }}
 .fchart .ax {{ fill:var(--muted); font:12px var(--f-mono); }} .fchart .un {{ font-weight:600; }}
 .fchart .ln {{ fill:none; stroke-width:2.2; stroke-linejoin:round; }}
