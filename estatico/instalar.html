@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="apple-touch-icon" href="icone-180.png">
+<title>Instalar iAz</title>
+<style>
+/* página única de instalação: passos numerados (a ordem importa) e um botão de copiar o código */
+:root { --bg:#F3F6F4; --card:#FFFFFF; --ink:#10201B; --muted:#5A6B65; --line:#DCE4E0; --verde:#1E5A45; --ouro:#C9952B; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0C1311; --card:#141E1B; --ink:#E4ECE8; --muted:#8FA19A; --line:#26332F;
+  --verde:#7FC4A6; --ouro:#EDB84A; color-scheme:dark; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 -apple-system,"Helvetica Neue",sans-serif;
+  padding:calc(18px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+main { max-width:560px; margin:0 auto; display:grid; gap:14px; }
+header { display:flex; gap:14px; align-items:center; }
+header img { width:64px; height:64px; border-radius:15px; }
+h1 { margin:0; font-size:24px; } h1 span { color:var(--ouro); }
+header p { margin:2px 0 0; color:var(--muted); font-size:14px; }
+section { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+h2 { margin:0 0 8px; font-size:17px; display:flex; gap:10px; align-items:center; }
+h2 b { background:var(--verde); color:var(--card); width:26px; height:26px; border-radius:50%; display:grid; place-items:center; font-size:14px; flex:none; }
+ol { margin:0; padding-left:20px; display:grid; gap:6px; }
+.btn { display:block; width:100%; text-align:center; padding:12px; border-radius:10px; font-weight:600; font-size:16px;
+  text-decoration:none; border:none; cursor:pointer; margin-top:10px; background:var(--verde); color:var(--card); }
+.btn.sec { background:transparent; color:var(--verde); border:1.5px solid var(--verde); }
+pre { margin:10px 0 0; padding:10px; background:var(--bg); border:1px solid var(--line); border-radius:8px; font:12px/1.4 ui-monospace,Menlo,monospace;
+  white-space:pre-wrap; word-break:break-all; -webkit-user-select:all; user-select:all; }
+.ok { color:var(--verde); font-weight:600; text-align:center; margin:6px 0 0; min-height:1.4em; }
+.nota { color:var(--muted); font-size:13px; }
+</style></head><body><main>
+<header><img src="icone-180.png" alt="">
+  <div><h1><span>i</span>Az</h1><p>Câmbio, grãos 2027, energia e troca de fertilizante em sacas de soja, atualizado a cada ~5 min.</p></div></header>
+
+<section><h2><b>1</b>Ícone na tela inicial</h2>
+<ol><li>No <strong>Safari</strong>, toque no botão abaixo para abrir o iAz.</li>
+<li>Na página que abrir, toque em <strong>Compartilhar</strong> (quadrado com seta para cima).</li>
+<li>Toque em <strong>Adicionar à Tela de Início</strong> → <strong>Adicionar</strong>. Depois volte aqui.</li></ol>
+<a class="btn sec" href="./">Abrir o iAz</a></section>
+
+<section><h2><b>2</b>Baixe o Scriptable</h2>
+<p class="nota" style="margin:0">App gratuito que mostra o widget com os números na tela inicial.</p>
+<a class="btn sec" href="https://apps.apple.com/br/app/scriptable/id1405459188">Abrir na App Store</a></section>
+
+<section><h2><b>3</b>Copie o código</h2>
+<button class="btn" id="copiar" type="button">Copiar código</button>
+<p class="ok" id="copiado" aria-live="polite"></p>
+<pre id="codigo">// iAz — carrega o widget publicado (atualiza sozinho quando o código mudar)
+const codigo = await new Request("https://fernandoaazambuja-lab.github.io/iaz/iaz-widget.js?t=" + Date.now()).loadString()
+await eval("(async () => {" + codigo + "\n})()")</pre></section>
+
+<section><h2><b>4</b>Cole no Scriptable</h2>
+<ol><li>Abra o Scriptable e toque no <strong>+</strong> (canto de cima).</li>
+<li>Toque e segure na área em branco → <strong>Colar</strong>.</li>
+<li>Toque no título no alto e renomeie para <strong>iAz</strong>.</li>
+<li>Toque no <strong>▶</strong>: deve aparecer o quadro verde com os números. Depois, <strong>Done</strong>.</li></ol></section>
+
+<section><h2><b>5</b>Widget na tela inicial</h2>
+<ol><li>Toque e segure num espaço vazio da tela inicial → <strong>Editar</strong> → <strong>Adicionar Widget</strong>.</li>
+<li>Procure <strong>Scriptable</strong>, escolha <strong>médio</strong> (6 números) ou <strong>grande</strong> (todos) → <strong>Adicionar Widget</strong>.</li>
+<li>Toque no widget cinza → <strong>Script: iAz</strong> → <strong>When Interacting: Open URL</strong>. Toque fora para fechar.</li></ol>
+<p class="nota">O iOS atualiza o widget sozinho, em geral a cada 5 a 15 minutos. A hora no canto mostra de quando é o dado.</p></section>
+</main>
+<script>
+document.getElementById("copiar").addEventListener("click", function () {
+  var txt = document.getElementById("codigo").textContent, msg = document.getElementById("copiado");
+  navigator.clipboard.writeText(txt).then(function () { msg.textContent = "Código copiado. Agora vá para o passo 4."; },
+    function () {   // se o navegador recusar, seleciona o texto para copiar à mão
+      var r = document.createRange(); r.selectNodeContents(document.getElementById("codigo"));
+      var s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      msg.textContent = "Toque em Copiar no menu que aparecer.";
+    });
+});
+</script>
+</body></html>
