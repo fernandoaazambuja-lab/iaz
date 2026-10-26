@@ -822,6 +822,37 @@ def main():
         fert="".join(fert_w) or '<div class="r"><span class="n">aguardando Comex Stat</span></div>',
         troca="".join(troca_w) or '<div class="r"><span class="n">aguardando Comex Stat</span></div>',
     )
+    # ---- dados.json: números prontos para o widget do iPhone (Scriptable), em ordem de prioridade
+    def item(nome, d, dec=2, pre="", suf="", pp=False):
+        if not d or d.get("valor") is None:
+            return None
+        dv, dp = var(d)
+        if dp is None:
+            vt, cl = "", "flat"
+        elif pp:
+            vt, cl = "%s%s p.p." % ("+" if dv > 0 else "", br(dv, dec)), classe(dp)
+        else:
+            vt, cl = "%s%s%%" % ("+" if dp > 0 else "", br(dp, 2)), classe(dp)
+        return {"nome": nome, "ctr": d.get("contrato", ""), "valor": pre + br(d["valor"], dec) + suf,
+                "var": vt, "dir": cl}
+    def troca(k, nome):
+        t = trw.get(k) or []
+        if not t:
+            return None
+        return item("Troca " + nome, {"valor": t[-1][1], "ant": t[-2][1] if len(t) > 1 else None,
+                                      "contrato": mes_txt(t[-1][0])}, 1, "", " sc")
+    itens = [item("Dólar", g("usdbrl"), 4, "R$ "), item("Dólar safra", g("DOL_27"), 4, "R$ "),
+             item("Soja B3", g("SJC_27"), 2, "US$ "), item("Milho B3", g("CCM_27"), 2, "R$ "),
+             item("Algodão", g("CT_27"), 2, "", "¢"), troca("ureia", "ureia"),
+             item("Dólar fut.", g("DOL_1"), 4, "R$ "), item("DI", g("DI1F28"), 2, "", "%", pp=True),
+             item("Ibovespa", g("ibov"), 0), item("EWZ", g("ewz"), 2, "US$ "),
+             item("Soja CBOT", sc(g("S_27"), BU_SC_SOJA / 100), 2, "US$ "),
+             item("Algodão", g("CT_1"), 2, "", "¢"), item("Brent", g("brent"), 2, "US$ "),
+             troca("kcl", "KCl"), troca("map", "MAP")]
+    with open(os.path.join(OUT_DIR, "dados.json"), "w", encoding="utf-8") as f:
+        json.dump({"hora": AGORA.strftime("%H:%M"), "data": AGORA.strftime("%d/%m"), "ok": not falhas,
+                   "itens": [i for i in itens if i]}, f, ensure_ascii=False)
+
     tmp = os.path.join(OUT_DIR, "widget.html.tmp")
     with open(tmp, "w", encoding="utf-8") as f:
         f.write(widget)
