@@ -13,6 +13,7 @@ import datetime
 import html
 import json
 import os
+import subprocess
 import urllib.parse
 import urllib.request
 from zoneinfo import ZoneInfo
@@ -1113,5 +1114,22 @@ html {{ -webkit-text-size-adjust:100%; }}
 </body></html>
 """
 
+def reforca_nuvem():
+    # só no Mac (IAZ_REFORCO=1 no launchd): se o agendamento do GitHub falhar, dispara a atualização da nuvem
+    gh = os.path.expanduser("~/.local/bin/gh")
+    if not os.environ.get("IAZ_REFORCO") or not os.path.exists(gh):
+        return
+    repo = "fernandoaazambuja-lab/iaz"
+    try:
+        ult = subprocess.run([gh, "run", "list", "-R", repo, "-L", "1", "--json", "createdAt", "--jq", ".[0].createdAt"],
+                             capture_output=True, text=True, timeout=30).stdout.strip()
+        if not ult or AGORA - datetime.datetime.fromisoformat(ult.replace("Z", "+00:00")) > datetime.timedelta(minutes=8):
+            subprocess.run([gh, "workflow", "run", "atualiza.yml", "-R", repo], capture_output=True, timeout=30)
+            print("nuvem: atualização disparada pelo Mac")
+    except Exception as e:
+        print("nuvem: reforço falhou:", str(e)[:80])
+
+
 if __name__ == "__main__":
     main()
+    reforca_nuvem()
