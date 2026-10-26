@@ -889,7 +889,9 @@ TEMPLATE = """<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="refresh" content="60">
-<title>Painel de Mercado Agro</title>
+<title>AzamInsights · Painel de Mercado Agro</title>
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="icon" href="icone-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
@@ -913,7 +915,11 @@ body {{ margin:0; background:var(--bg); color:var(--ink); font:14px/1.4 var(--f-
 .wrap > *, .cols > * {{ min-width:0; }}
 header {{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:8px 24px;
   border-bottom:2px solid var(--ink); padding-bottom:10px; }}
-h1 {{ margin:0; font-size:24px; font-weight:700; letter-spacing:-.01em; }}
+h1 {{ margin:0; font-size:24px; font-weight:700; letter-spacing:-.01em; line-height:1.1; }}
+.marca {{ display:flex; align-items:center; gap:10px; }}
+.marca img {{ border-radius:10px; flex:none; }}
+.marca p {{ margin:2px 0 0; font:600 11px var(--f-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }}
+.assina {{ display:block; margin-top:6px; font-weight:600; color:var(--accent); }}
 h1 span {{ color:var(--accent); }}
 .meta {{ font:500 13px var(--f-mono); color:var(--muted); display:flex; gap:14px; flex-wrap:wrap; }}
 .meta b {{ color:var(--ink); }}
@@ -996,7 +1002,8 @@ footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
   .cc-r.f {{ border-top:1px dashed var(--line); padding-top:4px; }}
   .cc-brl {{ display:flex; justify-content:space-between; background:var(--accent-soft); color:var(--accent); border-radius:4px; padding:4px 8px; font-size:12px; }}
   .cc-brl b {{ font-family:var(--f-mono); font-size:14px; }}
-  .fert {{ padding:12px; }}
+  .fert {{ padding:12px; }} .fert > * {{ min-width:0; }}
+  .marca img {{ width:36px; height:36px; border-radius:8px; }}
   .legend {{ margin-left:0; flex-basis:100%; }}
   .fchart {{ min-width:0; }}
   .ftab {{ min-width:0; }}
@@ -1045,7 +1052,8 @@ footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
 </style></head>
 <body><div class="wrap">
 <header>
-  <h1>Painel de Mercado <span>Agro</span></h1>
+  <div class="marca"><img src="icone-180.png" alt="" width="44" height="44">
+    <div><h1>Azam<span>Insights</span></h1><p>iAz · Painel de Mercado Agro</p></div></div>
   <div class="meta"><span><b>{data}</b> · atualizado às <b>{hora}</b></span><span>próxima ≈ {proxima}</span><span>{status}</span></div>
 </header>
 
@@ -1109,6 +1117,7 @@ footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
 <p>Texto montado automaticamente a partir dos números acima. Não substitui a análise da mesa de câmbio.</p></section>
 
 <footer>
+<span class="assina">AzamInsights · iAz — inteligência de mercado para o agro</span>
 Fontes: B3 (dólar futuro, DI, milho e soja B3, Ibovespa futuro — atraso de 15 min) · CNBC (CBOT, ICE, petróleo, câmbio, EWZ, ações — atraso de até 10–20 min em bolsa) · Banco Central (PTAX) · Comex Stat/MDIC (fertilizante: preço médio mensal de importação, FOB + frete, sem seguro; ureia 3102.10.10, KCl 3104.20.90, MAP 3105.40.00).
 Conversões: soja 2,2046 bu/sc · milho 2,3621 bu/sc · algodão 33,069 lb/@. "2027 em R$" usa o dólar futuro do vencimento de safra, sem prêmio, basis ou frete.
 Variação contra o fechamento ou ajuste do dia anterior. Barra = mínima–máxima do dia (traço claro = fechamento anterior).
