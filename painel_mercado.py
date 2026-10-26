@@ -1005,10 +1005,10 @@ footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
   .fert {{ padding:12px; }} .fert > * {{ min-width:0; }}
   .marca img {{ width:36px; height:36px; border-radius:8px; }}
   .legend {{ margin-left:0; flex-basis:100%; }}
-  .fchart {{ min-width:0; }}
-  .ftab {{ min-width:0; }}
-  .ftab th, .ftab td {{ padding:8px 6px; font-size:12px; }} .ftab td.v {{ font-size:13px; }}
-  .tfert th:nth-child(3), .tfert td:nth-child(3), .tfert th:nth-child(4), .tfert td:nth-child(4),
+  .fert .fchart {{ min-width:0; }}
+  .fert .ftab {{ min-width:0; }}
+  .fert .ftab th, .fert .ftab td {{ padding:8px 6px; font-size:12px; }} .fert .ftab td.v {{ font-size:13px; }}
+  .fert .tfert th:nth-child(3), .tfert td:nth-child(3), .tfert th:nth-child(4), .tfert td:nth-child(4),
   .tfert th:nth-child(6), .tfert td:nth-child(6), .tfert th:nth-child(8), .tfert td:nth-child(8),
   .ttroca th:nth-child(3), .ttroca td:nth-child(3), .ttroca th:nth-child(4), .ttroca td:nth-child(4),
   .ttroca th:nth-child(6), .ttroca td:nth-child(6), .ttroca th:nth-child(7), .ttroca td:nth-child(7) {{ display:none; }}
