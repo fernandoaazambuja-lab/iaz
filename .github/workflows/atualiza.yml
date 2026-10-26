@@ -1,0 +1,67 @@
+# iAz · AzamInsights — busca as cotações a cada 5 min e publica no GitHub Pages.
+# O histórico (curvas do dia, cache do Comex Stat) passa de uma rodada para a outra pelo cache do Actions.
+name: atualiza-cotacoes
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write   # só para o commit mensal que mantém o agendamento ativo
+  pages: write
+  id-token: write
+
+concurrency:
+  group: atualiza
+  cancel-in-progress: false
+
+jobs:
+  atualiza:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Recupera histórico
+        uses: actions/cache/restore@v4
+        with:
+          path: site/_historico_mercado.json
+          key: hist-${{ github.run_id }}
+          restore-keys: hist-
+
+      - name: Gera painel
+        env:
+          PAINEL_OUT: site
+        run: |
+          mkdir -p site
+          python3 painel_mercado.py
+          cp site/widget.html site/index.html
+          cp estatico/* site/
+
+      - name: Guarda histórico
+        uses: actions/cache/save@v4
+        with:
+          path: site/_historico_mercado.json
+          key: hist-${{ github.run_id }}
+
+      # o GitHub desliga agendamentos de repositório sem commit há 60 dias
+      - name: Mantém agendamento ativo
+        run: |
+          ultimo=$(git log -1 --format=%ct)
+          if [ $(( $(date +%s) - ultimo )) -gt 4320000 ]; then
+            git config user.name "iaz-bot"
+            git config user.email "iaz-bot@users.noreply.github.com"
+            git commit --allow-empty -m "mantém agendamento ativo"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
