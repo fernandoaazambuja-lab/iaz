@@ -1015,7 +1015,7 @@ footer {{ font:11px var(--f-mono); color:var(--muted); line-height:1.6; }}
   .marca img {{ width:36px; height:36px; border-radius:8px; }}
   .legend {{ margin-left:0; flex-basis:100%; }}
   .fert .fchart {{ min-width:0; }}
-  .fert .dsk {{ display:none; }} .fert .mob {{ display:block; }}
+  .fert .chart .dsk {{ display:none; }} .fert .chart .mob {{ display:block; }}
   .fert .ftab {{ min-width:0; }}
   .fert .ftab th, .fert .ftab td {{ padding:8px 6px; font-size:12px; }} .fert .ftab td.v {{ font-size:13px; }}
   .fert .tfert th:nth-child(3), .tfert td:nth-child(3), .tfert th:nth-child(4), .tfert td:nth-child(4),
