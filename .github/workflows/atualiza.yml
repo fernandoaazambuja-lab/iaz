@@ -12,9 +12,8 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: atualiza
-  cancel-in-progress: false
+# sem "concurrency" de propósito: em 05/11/2026 uma execução ficou presa na fila do GitHub e,
+# com a trava de uma-por-vez, bloqueou todas as seguintes por 15 dias
 
 jobs:
   atualiza:
