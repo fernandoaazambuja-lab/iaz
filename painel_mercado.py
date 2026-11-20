@@ -1219,8 +1219,9 @@ def reforca_nuvem():
         for st in ("queued", "pending", "waiting"):
             for r in gh_json("run", "list", "-R", repo, "-s", st, "-L", "20", "--json", "databaseId,createdAt"):
                 if AGORA - quando(r["createdAt"]) > datetime.timedelta(minutes=20):
-                    subprocess.run([gh, "run", "cancel", str(r["databaseId"]), "-R", repo], capture_output=True, timeout=30)
-                    print("nuvem: execução presa cancelada", r["databaseId"])
+                    c = subprocess.run([gh, "run", "cancel", str(r["databaseId"]), "-R", repo], capture_output=True, timeout=30)
+                    if c.returncode == 0:   # a fantasma de 05/11 recusa cancelamento; sem a trava, ela não bloqueia nada
+                        print("nuvem: execução presa cancelada", r["databaseId"])
         # 2) sem sucesso há mais de 8 min: dispara uma atualização
         ok = gh_json("run", "list", "-R", repo, "-s", "success", "-L", "1", "--json", "createdAt")
         ult = quando(ok[0]["createdAt"]) if ok else None
