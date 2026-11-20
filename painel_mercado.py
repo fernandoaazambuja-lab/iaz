@@ -1200,19 +1200,55 @@ html {{ -webkit-text-size-adjust:100%; }}
 """
 
 def reforca_nuvem():
-    # só no Mac (IAZ_REFORCO=1 no launchd): se o agendamento do GitHub falhar, dispara a atualização da nuvem
+    # vigia da nuvem, só no Mac (IAZ_REFORCO=1 no launchd). Olha a última execução COM SUCESSO, não a última
+    # criada: entre 05 e 20/11/2026 as execuções eram criadas e canceladas em série e o Mac achava que estava tudo bem.
     gh = os.path.expanduser("~/.local/bin/gh")
     if not os.environ.get("IAZ_REFORCO") or not os.path.exists(gh):
         return
     repo = "fernandoaazambuja-lab/iaz"
+
+    def gh_json(*args):
+        r = subprocess.run([gh] + list(args), capture_output=True, text=True, timeout=30)
+        return json.loads(r.stdout or "[]")
+
+    def quando(t):
+        return datetime.datetime.fromisoformat(t.replace("Z", "+00:00"))
+
     try:
-        ult = subprocess.run([gh, "run", "list", "-R", repo, "-L", "1", "--json", "createdAt", "--jq", ".[0].createdAt"],
-                             capture_output=True, text=True, timeout=30).stdout.strip()
-        if not ult or AGORA - datetime.datetime.fromisoformat(ult.replace("Z", "+00:00")) > datetime.timedelta(minutes=8):
+        # 1) execução presa na fila há mais de 20 min: cancela para não segurar nada
+        for st in ("queued", "pending", "waiting"):
+            for r in gh_json("run", "list", "-R", repo, "-s", st, "-L", "20", "--json", "databaseId,createdAt"):
+                if AGORA - quando(r["createdAt"]) > datetime.timedelta(minutes=20):
+                    subprocess.run([gh, "run", "cancel", str(r["databaseId"]), "-R", repo], capture_output=True, timeout=30)
+                    print("nuvem: execução presa cancelada", r["databaseId"])
+        # 2) sem sucesso há mais de 8 min: dispara uma atualização
+        ok = gh_json("run", "list", "-R", repo, "-s", "success", "-L", "1", "--json", "createdAt")
+        ult = quando(ok[0]["createdAt"]) if ok else None
+        parado = AGORA - ult if ult else datetime.timedelta(days=99)
+        recente = gh_json("run", "list", "-R", repo, "-L", "1", "--json", "createdAt,status")
+        rodando = recente and recente[0]["status"] in ("in_progress", "queued", "pending") \
+            and AGORA - quando(recente[0]["createdAt"]) < datetime.timedelta(minutes=8)
+        if parado > datetime.timedelta(minutes=8) and not rodando:
             subprocess.run([gh, "workflow", "run", "atualiza.yml", "-R", repo], capture_output=True, timeout=30)
             print("nuvem: atualização disparada pelo Mac")
+        # 3) sem sucesso há mais de 30 min: avisa na tela do Mac, no máximo uma vez por hora
+        marca = os.path.join(OUT_DIR, ".ultimo_alerta")
+        if parado > datetime.timedelta(minutes=30):
+            try:
+                ultimo_alerta = datetime.datetime.fromisoformat(open(marca).read().strip())
+            except (OSError, ValueError):
+                ultimo_alerta = None
+            if not ultimo_alerta or AGORA - ultimo_alerta > datetime.timedelta(hours=1):
+                desde = ult.astimezone(TZ).strftime("%d/%m %H:%M") if ult else "?"
+                msg = "A nuvem do iAz não atualiza desde %s. O widget do iPhone está parado — chame o Claude." % desde
+                subprocess.run(["osascript", "-e", 'display notification "%s" with title "iAz · AzamInsights" sound name "Funk"' % msg],
+                               capture_output=True, timeout=15)
+                open(marca, "w").write(AGORA.isoformat())
+                print("nuvem: ALERTA —", msg)
+        elif os.path.exists(marca):
+            os.remove(marca)
     except Exception as e:
-        print("nuvem: reforço falhou:", str(e)[:80])
+        print("nuvem: vigia falhou:", str(e)[:100])
 
 
 if __name__ == "__main__":
