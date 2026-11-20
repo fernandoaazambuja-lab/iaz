@@ -46,8 +46,10 @@ if (fam.startsWith("accessory")) {
   const i = topo.addText("i"); i.font = Font.heavySystemFont(15); i.textColor = OURO
   const az = topo.addText("Az"); az.font = Font.heavySystemFont(15); az.textColor = BRANCO
   topo.addSpacer()
-  const hora = topo.addText(d ? (d.antigo ? "⚠︎ " : "") + d.hora : "--:--")
-  hora.font = Font.mediumMonospacedSystemFont(11); hora.textColor = CINZA
+  // dado com mais de 30 min fica em vermelho e com a data, para ninguém confiar em número parado
+  const velho = d && d.ts && (Date.now() - Date.parse(d.ts)) > 30 * 60 * 1000
+  const hora = topo.addText(d ? ((d.antigo || velho) ? "⚠︎ " : "") + (velho ? d.data + " " : "") + d.hora : "--:--")
+  hora.font = Font.mediumMonospacedSystemFont(11); hora.textColor = velho ? DESCE : CINZA
   w.addSpacer(fam === "large" ? 10 : 6)
 
   if (!d) {

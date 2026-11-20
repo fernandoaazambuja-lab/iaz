@@ -885,6 +885,7 @@ def main():
              grp(troca("map", "MAP"), "troca")]
     with open(os.path.join(OUT_DIR, "dados.json"), "w", encoding="utf-8") as f:
         json.dump({"hora": AGORA.strftime("%H:%M"), "data": AGORA.strftime("%d/%m"), "ok": not falhas,
+                   "ts": AGORA.isoformat(timespec="seconds"),
                    "itens": [i for i in itens if i]}, f, ensure_ascii=False)
 
     tmp = os.path.join(OUT_DIR, "widget.html.tmp")
