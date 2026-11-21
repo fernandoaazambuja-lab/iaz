@@ -18,6 +18,7 @@ try {
 const VERDE = new Color("#123A2E"), VERDE2 = new Color("#0B231C"), OURO = new Color("#EDB84A")
 const BRANCO = Color.white(), CINZA = new Color("#9DB5AC")
 const SOBE = new Color("#4ADE8F"), DESCE = new Color("#FF7A6E")
+const FAROL_VERDE = new Color("#34D27B"), FAROL_AMARELO = new Color("#F5C542"), FAROL_VERMELHO = new Color("#FF5A4E")
 
 const w = new ListWidget()
 w.url = URL_SITE
@@ -46,10 +47,14 @@ if (fam.startsWith("accessory")) {
   const i = topo.addText("i"); i.font = Font.heavySystemFont(15); i.textColor = OURO
   const az = topo.addText("Az"); az.font = Font.heavySystemFont(15); az.textColor = BRANCO
   topo.addSpacer()
-  // dado com mais de 30 min fica em vermelho e com a data, para ninguém confiar em número parado
-  const velho = d && d.ts && (Date.now() - Date.parse(d.ts)) > 30 * 60 * 1000
-  const hora = topo.addText(d ? ((d.antigo || velho) ? "⚠︎ " : "") + (velho ? d.data + " " : "") + d.hora : "--:--")
-  hora.font = Font.mediumMonospacedSystemFont(11); hora.textColor = velho ? DESCE : CINZA
+  // farol de saúde: verde = tudo ok; amarelo = atenção (dado de 15–30 min, alguma fonte falhou
+  // ou o iPhone está sem internet e mostrando o último guardado); vermelho = dado parado há mais de 30 min
+  const idade = d && d.ts ? (Date.now() - Date.parse(d.ts)) / 60000 : Infinity
+  const farol = !d || idade > 30 ? FAROL_VERMELHO : (d.antigo || d.ok === false || idade > 15) ? FAROL_AMARELO : FAROL_VERDE
+  const ponto = topo.addText("●"); ponto.font = Font.systemFont(10); ponto.textColor = farol
+  topo.addSpacer(5)
+  const hora = topo.addText(d ? `${d.data} ${d.hora}` : "--/-- --:--")
+  hora.font = Font.mediumMonospacedSystemFont(11); hora.textColor = farol === FAROL_VERMELHO ? FAROL_VERMELHO : CINZA
   w.addSpacer(fam === "large" ? 10 : 6)
 
   if (!d) {
